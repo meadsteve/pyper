@@ -4,14 +4,10 @@ import pyper
 def main(name: str):
     yield pyper.Echo("Hello")
     yield pyper.Echo(f"I will call you {name}")
-    yield pyper.Echo("Bye")
+    resp = yield pyper.Prompt("Are you sure?")
+    yield pyper.Echo(f"you said {resp}")
 
 
-assert list(main("steve")) == [
-    pyper.Echo("Hello"),
-    pyper.Echo("I will call you steve"),
-    pyper.Echo("Bye"),
-]
 
 if __name__ == "__main__":
     pyper.run(main)
