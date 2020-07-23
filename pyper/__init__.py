@@ -24,6 +24,10 @@ def run(func):
     typer.run(wrapped_func)
 
 
+def test_with_input(generator, input: Iterable):
+    return __run_generator(generator, __process_line_faker(input))
+
+
 def _wrap_func(func):
     @functools.wraps(func)
     def _wrapper(*args, **kwargs):
@@ -32,26 +36,29 @@ def _wrap_func(func):
     return _wrapper
 
 
-def test_with_input(generator, input: Iterable):
+def __process_line(generator, line):
+    if isinstance(line, Echo):
+        typer.echo(**line.__dict__)
+    elif isinstance(line, Prompt):
+        user_input = typer.prompt(line.message)
+        resp = generator.send(user_input)
+        return __process_line(generator, resp)
+
+
+def __process_line_faker(fake_input):
+    def func(generator, line):
+        if isinstance(line, Prompt):
+            return generator.send(next(fake_input))
+    return func
+
+
+def __run_generator(generator, line_processor=__process_line):
     try:
         while True:
             line = next(generator)
             yield line
-            if isinstance(line, Prompt):
-                yield generator.send(next(input))
-    except StopIteration:
-        pass
-
-
-def __run_generator(generator):
-    try:
-        while True:
-            line = next(generator)
-            yield line
-            if isinstance(line, Echo):
-                typer.echo(**line.__dict__)
-            elif isinstance(line, Prompt):
-                resp = typer.prompt(line.message)
-                generator.send(resp)
+            extra_output = line_processor(generator, line)
+            if extra_output is not None:
+                yield extra_output
     except StopIteration:
         pass
