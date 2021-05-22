@@ -1,10 +1,14 @@
-from typing import Iterable
+from typing import Iterable, Union, List
 
 from pyper.core import Prompt, run_generator
 
 
-def test_with_input(generator, input: Iterable):
-    return run_generator(generator, __process_line_faker(input))
+def run_with_input(generator, user_inputs: Union[Iterable[str], List[str], str]):
+    if isinstance(user_inputs, str):
+        user_inputs = [user_inputs]
+    if isinstance(user_inputs, list):
+        user_inputs = iter(user_inputs)
+    return run_generator(generator, __process_line_faker(user_inputs))
 
 
 def __process_line_faker(fake_input):
