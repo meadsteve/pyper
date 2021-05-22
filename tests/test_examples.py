@@ -1,3 +1,5 @@
+import sh
+
 import pyper
 from pyper.testing_helpers import run_with_input
 
@@ -48,3 +50,14 @@ def test_the_example_with_many_inputs():
         pyper.Prompt(message='Are you really sure?'),
         pyper.Echo(f"you confirmed of course")
     ]
+
+
+def test_the_example_dot_py_script_works():
+    from io import StringIO
+    from os.path import dirname
+
+    output = StringIO()
+    sh.python("example.py", "somename", _out=output, _cwd=dirname(__file__) + "/../", _in=("yes",))
+
+    expected = "Hello\nI will call you somename\nAre you sure?: you said yes\n"
+    assert output.getvalue() == expected
